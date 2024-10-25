@@ -25,11 +25,14 @@ class SchemaBuilder:
         common_items = set(lists[0]).intersection(*lists)
         return list(common_items)[0] if common_items else None
     
-    def find_common_column_in_excel(self, excel_file_path):
+    def find_common_column_in_excel(self, excel_file_path, sheet_exclusion):
         xls = pd.ExcelFile(excel_file_path)
         common_columns = None
 
         for sheet_name in xls.sheet_names:
+            if sheet_name== sheet_exclusion:
+                continue    # exclude sheet
+            
             sheet_data = pd.read_excel(xls, sheet_name=sheet_name)
             if sheet_data.empty:
                 continue    # skip empty sheet
@@ -44,20 +47,23 @@ class SchemaBuilder:
         return list(common_columns)[0] if common_columns else None
 
  
-    def merge_data(self):
+    def merge_data(self, sheet_exclusion = "Codes"):
         for filefolder in os.listdir(self.data_folder):
             file_path = os.path.join(self.data_folder, filefolder)
             if os.path.isdir(file_path):  # Check if it's a directory
                 for table in os.listdir(file_path):
                     if table.endswith('.xlsx'):
                         table_path = os.path.join(file_path, table)
-                        common_column = self.find_common_column_in_excel(table_path)
+                        common_column = self.find_common_column_in_excel(table_path, sheet_exclusion)
                         if not common_column:
                             raise ValueError(f"No common column found in {table_path}.")
 
                         merged_data = pd.DataFrame()
                         xls = pd.ExcelFile(table_path)
                         for sheet_name in xls.sheet_names:
+                            if sheet_name == sheet_exclusion:
+                                continue  # Skip the "Codes" sheet
+                            
                             sheet_data = pd.read_excel(xls, sheet_name=sheet_name)
                             if sheet_data.empty:
                                 continue  # Skip empty sheets
