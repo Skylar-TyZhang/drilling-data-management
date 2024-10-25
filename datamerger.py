@@ -31,6 +31,9 @@ class SchemaBuilder:
 
         for sheet_name in xls.sheet_names:
             sheet_data = pd.read_excel(xls, sheet_name=sheet_name)
+            if sheet_data.empty:
+                continue    # skip empty sheet
+            
             columns = set(sheet_data.columns)
 
             if common_columns is None:
@@ -56,6 +59,9 @@ class SchemaBuilder:
                         xls = pd.ExcelFile(table_path)
                         for sheet_name in xls.sheet_names:
                             sheet_data = pd.read_excel(xls, sheet_name=sheet_name)
+                            if sheet_data.empty:
+                                continue  # Skip empty sheets
+
                             if merged_data.empty:
                                 merged_data = sheet_data
                             else:
@@ -67,6 +73,7 @@ class SchemaBuilder:
                         print(f"Merged data written to {output_file_path}")
 
         return merged_data
+
 
             
  
